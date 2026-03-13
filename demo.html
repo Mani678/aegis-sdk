@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis SDK Demo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #050505; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: monospace; padding: 40px 20px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    const { useState } = React;
+
+    const assessment = {
+      tier: 3,
+      orderSizeUSD: 50432688,
+      estimatedOutput: { usdValue: 5043, lossToSlippageUSD: 50427645 },
+      slippage: { estimatedPercent: 0.9999, severity: 'catastrophic' },
+      liquidity: { totalDepthUSD: 8000000, orderVsDepthPercent: 630.4 },
+      recommendation: {
+        method: 'twap_required',
+        reason: 'Order is 630% of available pool depth — single swap will cause catastrophic slippage',
+        suggestedTranches: 26,
+        suggestedWindowHours: 5,
+        estimatedOutputViaTWAP: 50281390
+      }
+    };
+
+    function fmt(n) {
+      return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+
+    function SafeSwapUI({ assessment, onProceed, onCancel }) {
+      const [confirmed, setConfirmed] = useState(false);
+      const tierColor = { 1: '#22c55e', 2: '#f59e0b', 3: '#ef4444' }[assessment.tier];
+      const tierLabel = { 1: 'TIER 1 — SAFE', 2: 'TIER 2 — CAUTION', 3: 'TIER 3 — CRITICAL' }[assessment.tier];
+
+      return React.createElement('div', {
+        style: {
+          background: '#0f0f0f', border: `1px solid ${tierColor}`,
+          borderRadius: 12, padding: 32, maxWidth: 560, width: '100%',
+          color: '#e5e5e5', fontFamily: 'monospace'
+        }
+      },
+        // Header
+        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 } },
+          React.createElement('div', { style: { fontSize: 18, fontWeight: 'bold', color: '#fff', letterSpacing: 1 } }, '⚡ AEGIS'),
+          React.createElement('div', { style: { background: tierColor + '22', border: `1px solid ${tierColor}`, color: tierColor, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 'bold' } }, tierLabel)
+        ),
+
+        // Order size
+        React.createElement('div', { style: { marginBottom: 20 } },
+          React.createElement('div', { style: { color: '#666', fontSize: 11, marginBottom: 4 } }, 'ORDER SIZE'),
+          React.createElement('div', { style: { fontSize: 28, fontWeight: 'bold', color: '#fff' } }, fmt(assessment.orderSizeUSD))
+        ),
+
+        // Execution comparison table
+        React.createElement('div', { style: { background: '#1a1a1a', borderRadius: 8, padding: 16, marginBottom: 20 } },
+          React.createElement('div', { style: { color: '#666', fontSize: 11, marginBottom: 12 } }, 'EXECUTION COMPARISON'),
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
+            React.createElement('div', null,
+              React.createElement('div', { style: { color: '#ef4444', fontSize: 11 } }, 'SINGLE SWAP'),
+              React.createElement('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#ef4444' } }, fmt(assessment.estimatedOutput.usdValue)),
+              React.createElement('div', { style: { color: '#ef4444', fontSize: 11 } }, `-${fmt(assessment.estimatedOutput.lossToSlippageUSD)} lost`)
+            ),
+            React.createElement('div', { style: { color: '#333', fontSize: 24, alignSelf: 'center' } }, '→'),
+            React.createElement('div', { style: { textAlign: 'right' } },
+              React.createElement('div', { style: { color: '#22c55e', fontSize: 11 } }, 'VIA TWAP'),
+              React.createElement('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#22c55e' } }, fmt(assessment.recommendation.estimatedOutputViaTWAP)),
+              React.createElement('div', { style: { color: '#22c55e', fontSize: 11 } }, `${assessment.recommendation.suggestedTranches} tranches · ${assessment.recommendation.suggestedWindowHours}h`)
+            )
+          )
+        ),
+
+        // Liquidity warning
+        React.createElement('div', { style: { background: '#1a0a0a', border: '1px solid #ef444433', borderRadius: 8, padding: 12, marginBottom: 20 } },
+          React.createElement('div', { style: { color: '#ef4444', fontSize: 11, marginBottom: 4 } }, '⚠ LIQUIDITY WARNING'),
+          React.createElement('div', { style: { color: '#aaa', fontSize: 12 } }, assessment.recommendation.reason)
+        ),
+
+        // Slippage bar
+        React.createElement('div', { style: { marginBottom: 24 } },
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+            React.createElement('div', { style: { color: '#666', fontSize: 11 } }, 'ESTIMATED SLIPPAGE'),
+            React.createElement('div', { style: { color: '#ef4444', fontWeight: 'bold', fontSize: 13 } }, (assessment.slippage.estimatedPercent * 100).toFixed(2) + '%')
+          ),
+          React.createElement('div', { style: { background: '#1a1a1a', borderRadius: 4, height: 6, overflow: 'hidden' } },
+            React.createElement('div', { style: { background: '#ef4444', width: (assessment.slippage.estimatedPercent * 100) + '%', height: '100%', borderRadius: 4 } })
+          )
+        ),
+
+        // Tier 3 confirmation checkbox
+        assessment.tier === 3 && React.createElement('div', {
+          style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20, cursor: 'pointer' },
+          onClick: () => setConfirmed(!confirmed)
+        },
+          React.createElement('div', {
+            style: {
+              width: 18, height: 18, border: `2px solid ${confirmed ? '#ef4444' : '#444'}`,
+              borderRadius: 4, background: confirmed ? '#ef4444' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, marginTop: 1
+            }
+          }, confirmed && React.createElement('span', { style: { color: '#fff', fontSize: 12 } }, '✓')),
+          React.createElement('div', { style: { color: '#aaa', fontSize: 12, lineHeight: 1.4 } },
+            'I understand this order exceeds safe pool depth and will execute via TWAP over ', assessment.recommendation.suggestedWindowHours, ' hours.'
+          )
+        ),
+
+        // Buttons
+        React.createElement('div', { style: { display: 'flex', gap: 12 } },
+          React.createElement('button', {
+            onClick: onCancel,
+            style: { flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid #333', borderRadius: 8, color: '#666', cursor: 'pointer', fontFamily: 'monospace', fontSize: 13 }
+          }, 'Cancel'),
+          React.createElement('button', {
+            onClick: onProceed,
+            disabled: assessment.tier === 3 && !confirmed,
+            style: {
+              flex: 2, padding: '12px 0', background: assessment.tier === 3 && !confirmed ? '#1a1a1a' : tierColor,
+              border: 'none', borderRadius: 8,
+              color: assessment.tier === 3 && !confirmed ? '#444' : '#000',
+              cursor: assessment.tier === 3 && !confirmed ? 'not-allowed' : 'pointer',
+              fontFamily: 'monospace', fontSize: 13, fontWeight: 'bold'
+            }
+          }, 'Execute via TWAP')
+        )
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(
+      React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '40px 20px' } },
+        React.createElement(SafeSwapUI, {
+          assessment,
+          onProceed: () => alert('✅ Order submitted for TWAP execution'),
+          onCancel: () => alert('❌ Order cancelled')
+        })
+      )
+    );
+  </script>
+</body>
+</html>
