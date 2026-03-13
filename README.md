@@ -1,5 +1,4 @@
 # Aegis SDK
-
 **Large order execution protection for DeFi interfaces.**
 
 Aegis is a TypeScript SDK that classifies trade orders by risk tier before execution, preventing catastrophic slippage on large DeFi trades.
@@ -41,7 +40,6 @@ Aegis classifies any trade order into one of three tiers:
 Running Aegis against the actual transaction:
 ```
 === AEGIS ORDER CLASSIFIER ===
-
 TIER:                3
 ORDER SIZE:          $50,432,688
 SLIPPAGE ESTIMATE:   99.99%
@@ -50,7 +48,6 @@ POOL DEPTH:          $8,000,000
 ORDER VS DEPTH:      630%
 ESTIMATED OUTPUT:    $5,043  (single swap)
 ESTIMATED LOSS:      $50,427,645
-
 RECOMMENDATION:      twap_required
 REASON:              Order is 630% of available pool depth
 SUGGESTED TRANCHES:  26
@@ -62,11 +59,20 @@ Aegis would have blocked the single swap and routed to TWAP execution — saving
 
 ---
 
+## Demo
+
+Open `demo.html` in any browser — no server or install required.
+
+Shows the SafeSwapUI component rendering the $50M transaction assessment with live execution comparison, slippage bar, confirmation gate, and TWAP execution button.
+
+---
+
 ## Modules
 
 - **PricingModule** — live token prices via CoinGecko
 - **LiquidityModule** — pool depth lookup for token pairs
 - **OrderClassifier** — tier assignment, slippage estimation, execution recommendation
+- **SafeSwapUI** — standalone HTML demo UI showing order assessment visually
 
 ---
 
@@ -87,12 +93,17 @@ Run the classifier against the $50M transaction:
 npx tsx src/test.ts
 ```
 
+Open the visual demo:
+```bash
+start demo.html
+```
+
 ---
 
 ## Roadmap
 
 - [x] OrderClassifier — tier assignment and slippage estimation
-- [ ] SafeSwapUI — drop-in React component replacing checkbox warnings
+- [x] SafeSwapUI — browser demo showing order assessment and TWAP gate
 - [ ] TWAPExecutor — wraps CoW Protocol ComposableCoW for batched execution
 - [ ] Protocol SDK — embeddable package for DeFi interfaces
 
