@@ -75,7 +75,28 @@ Shows the SafeSwapUI component rendering the $50M transaction assessment with li
 - **SafeSwapUI** — standalone HTML demo UI showing order assessment visually
 
 ---
+## On-Chain Deployment
 
+The AegisClassifier is deployed and verified on Base Mainnet.
+
+**Base Mainnet**
+- Contract: `0xa380db3fdddec5e1245b3bc2d4a7ad6bf1435528`
+- Basescan: [View on Basescan](https://basescan.org/address/0xa380db3fdddec5e1245b3bc2d4a7ad6bf1435528#readContract)
+
+**Base Sepolia (Testnet)**
+- Contract: `0x35418a2d209d8df2cb15b90bd9b4a3617e59b16c`
+- Basescan: [View on Basescan](https://sepolia.basescan.org/address/0x35418a2d209d8df2cb15b90bd9b4a3617e59b16c#readContract)
+
+### Test it on-chain
+1. Go to the Basescan link above
+2. Click **Read Contract**
+3. Call `classify` with:
+   - `sellToken`: `0x23878914EFE38d27C4D67Ab83ed1b93A74D4086a`
+   - `buyToken`: `0xA700b4eB416Be35b2911fd5Dee80678ff64fF6C9`
+   - `orderSizeUSD`: `50432688`
+4. See **Tier 3 — Critical** returned on-chain
+
+---
 ## Quick Start
 ```bash
 git clone https://github.com/Mani678/aegis-sdk.git
